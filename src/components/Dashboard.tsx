@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { useServiceFields, useServices } from "../data/service-fields";
 import { useFormMapStore } from "../store/form-map-store";
 
@@ -9,14 +8,18 @@ export function Dashboard() {
     useServiceFields(selectedService);
   const { data: services, isLoading: servicesLoading } = useServices();
 
+  const setMapping = useFormMapStore((state) => state.setMapping);
   const setCurrentField = useFormMapStore((state) => state.setCurrentField);
-  const setCurrentService = useFormMapStore((state) => state.selectService);
-  const clearMappings = useRef(
-    useFormMapStore((state) => state.clearMappings)
-  ).current;
-  const getServiceFieldMapping = useFormMapStore(
-    (state) => state.getServiceFieldMapping
-  );
+  const selectService = useFormMapStore((state) => state.selectService);
+
+  const clearMappings = useFormMapStore((state) => state.clearMappings);
+  const mappings = useFormMapStore((state) => state.mappings);
+
+  useFormMapStore.subscribe((state, prevState) => {
+    if (state.service !== prevState.service) {
+      clearMappings();
+    }
+  });
 
   return (
     <div>
@@ -28,7 +31,7 @@ export function Dashboard() {
             Select a Service:{" "}
             <select
               defaultValue={selectedService || ""}
-              onChange={(e) => setCurrentService(e.target.value)}
+              onChange={(e) => selectService(e.target.value)}
             >
               <option value=""></option>
               {services?.map((service) => (
@@ -46,11 +49,13 @@ export function Dashboard() {
           <table className="table-auto bg-white border-collapse	border border-slate-500 ">
             <thead>
               <tr className="bg-gray-400">
-                {["Service Field Name", "Mapping", "Edit"].map((header) => (
-                  <th className="p-2 border" key={header}>
-                    {header}
-                  </th>
-                ))}
+                {["Service Field Name", "Mapping", "Edit", "Clear"].map(
+                  (header) => (
+                    <th className="p-2 border" key={header}>
+                      {header}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody>
@@ -58,12 +63,21 @@ export function Dashboard() {
                 <tr key={field.id}>
                   <td className="border p-2">{field.label} </td>
                   <td className="border p-2">
-                    {getServiceFieldMapping(field.id)?.label || (
+                    {mappings[field.id]?.label || (
                       <span className="opacity-25">N/A</span>
                     )}
                   </td>
                   <td className="border p-2">
                     <button onClick={() => setCurrentField(field)}>✏️</button>
+                  </td>
+                  <td className="border p-2 text-center">
+                    <button
+                      onClick={() => setMapping(field.id, null)}
+                      className="disabled:hidden"
+                      disabled={!mappings[field.id]}
+                    >
+                      🗑️
+                    </button>
                   </td>
                 </tr>
               ))}

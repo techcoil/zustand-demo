@@ -28,41 +28,45 @@ export type ServiceField = {
 type FormMapState = {
   currentField: ServiceField | null;
   service: string | null;
+  mappings: Record<string, FormField | null>;
+};
+
+type FromMapActions = {
   selectService: (service: string) => void;
   setCurrentField: (field: ServiceField) => void;
-  mappings: Record<string, FormField>;
-  getServiceFieldMapping: (fieldId: string) => FormField | null;
-  setMapping: (fieldId: string, field: FormField) => void;
+  setMapping: (fieldId: string, field: FormField | null) => void;
   clearCurrentField: () => void;
   clearMappings: () => void;
 };
 
-export const useFormMapStore = create<FormMapState>((set, get) => ({
-  currentField: null,
-  mappings: {},
-  service: null,
-  getServiceFieldMapping: (fieldId: string) => get().mappings[fieldId] ?? null,
-  selectService: (service) => set({ service }),
-  setMapping: (fieldId: string, formField: FormField) =>
-    set((state) => {
-      return {
-        currentField: null,
+export const useFormMapStore = create<FormMapState & FromMapActions>()(
+  (set) => ({
+    currentField: null,
+    mappings: {},
+    service: null,
+    selectService: (service) => set({ service }),
+    setMapping: (fieldId: string, formField: FormField | null) =>
+      set((state) => ({
         mappings: {
           ...state.mappings,
           [fieldId]: formField,
         },
-      };
-    }),
-  clearCurrentField: () => set({ currentField: null }),
-  clearMappings: () => set({ mappings: {} }),
-  setCurrentField: (field) =>
-    set({
-      currentField: field,
-    }),
-}));
+      })),
+
+    clearCurrentField: () => set({ currentField: null }),
+    clearMappings: () => set({ mappings: {} }),
+    setCurrentField: (field) =>
+      set({
+        currentField: field,
+      }),
+  })
+);
 
 export const useCurrentField = () =>
   useFormMapStore((state) => state.currentField);
 
 export const useSelectedService = () =>
   useFormMapStore((state) => state.service);
+
+export const getServiceFieldMapping = (fieldId: string) =>
+  useFormMapStore.getState().mappings[fieldId] ?? null;

@@ -1,3 +1,4 @@
+import { useFormMapStore } from "./../store/form-map-store";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ServiceField, useFormMapStore } from "../store/form-map-store";
 
@@ -76,18 +77,16 @@ export const useServiceFields = (service: string | null) => {
 };
 
 export function usePersistCurrentField(formId: number) {
-  const mappings = useFormMapStore((state) => state.mappings);
-  const currentService = useFormMapStore((state) => state.service);
   return useMutation({
     mutationKey: ["saveCurrentField"],
     mutationFn: async () => {
-      console.log("making request");
-      await new Promise((res) => setTimeout(res, 2000));
-      console.log("Persisting Mapping", {
+      console.log("making request", {
         formId,
-        service: currentService,
-        mappings,
+        service: useFormMapStore.getState().service,
+        mappings: useFormMapStore.getState().mappings,
       });
+      await new Promise((res) => setTimeout(res, 500));
+      console.log("persist request done");
     },
   });
 }

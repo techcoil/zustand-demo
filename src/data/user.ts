@@ -1,4 +1,3 @@
-import { queryClient } from "./query-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 type User = {
   name: string;
@@ -43,7 +42,7 @@ export function useLogin() {
       console.log("Making Login");
       await new Promise((res) => setTimeout(res, 200));
       serverMockData.user = {
-        name: "John Doe",
+        name: "Israel Israeli",
         profilePic: "https://picsum.photos/50/50",
       };
     },
